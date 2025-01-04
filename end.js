@@ -21,16 +21,18 @@ saveHighScore = e => {
         name: username.value
     }
 
+    // Ajoutez le score au tableau des scores
     highScores.push(score)
 
-    highScores.sort((a,b) => {
-        return b.score - a.score
-    })
+    // Trier les scores par ordre décroissant
+    highScores.sort((a, b) => b.score - a.score)
 
-    highScores.splice(5)
+    // Limiter le nombre de scores à MAX_HIGH_SCORES
+    highScores.splice(MAX_HIGH_SCORES)
 
+    // Sauvegarder les scores dans localStorage
     localStorage.setItem('highScores', JSON.stringify(highScores))
-    window.location.assign('./highscores.html')
 
-    
+    // Rediriger vers la page de classement
+    window.location.assign('./highscores.html')
 }
