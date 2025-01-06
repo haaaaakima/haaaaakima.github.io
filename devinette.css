@@ -17,6 +17,36 @@ body {
     padding: 2rem;
 }
 
+/* Heads-up Display */
+#hud {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    color: #fff;
+    text-align: center;
+}
+
+.hud-prefix {
+    font-weight: bold;
+}
+
+#progressBar {
+    width: 100%;
+    height: 0.3rem;
+    background: #ccc;
+    border-radius: 50px;
+    margin-top: 1rem;
+}
+
+#progressBarFull {
+    height: 100%;
+    background: #4CAF50;
+    width: 0%;
+    border-radius: 50px;
+    transition: width 0.3s ease-in-out;
+}
+
 /* Devinette question */
 #question {
     cursor: pointer;
@@ -76,5 +106,15 @@ body {
     #nextButton {
         font-size: 1.5rem;
         padding: 10px 20px;
+    }
+
+    #hud {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #progressBar {
+        width: 80%;
+        height: 0.25rem;
     }
 }
