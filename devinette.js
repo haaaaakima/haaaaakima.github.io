@@ -3,12 +3,12 @@ const nextButton = document.querySelector('#nextButton');
 
 let currentQuestion = {};
 let acceptingAnswers = true;
-let availableQuestions = [];
+let availableQuestions = [];  // Liste de questions récupérées
 
 // Fonction pour récupérer des devinettes depuis l'API JokeAPI
 const fetchQuestionsFromAPI = async () => {
     try {
-        // Nous récupérons ici 5 devinettes
+        // Nous récupérons ici un set de devinettes, sans limite spécifique.
         const response = await fetch('https://v2.jokeapi.dev/joke/Any?lang=fr&type=twopart&format=json&amount=5');
         const data = await response.json();
 
@@ -20,7 +20,7 @@ const fetchQuestionsFromAPI = async () => {
                         answer: joke.delivery, // La réponse correcte
                     };
                 }
-            }).filter(Boolean);  // Retirer les éléments invalides
+            }).filter(Boolean);  // Filtrer les résultats non valides
         } else {
             console.log("Aucune devinette valide");
             return [];
@@ -31,45 +31,46 @@ const fetchQuestionsFromAPI = async () => {
     }
 };
 
-// Afficher la nouvelle question
-const showNextQuestion = () => {
+// Afficher la prochaine question
+const showNextQuestion = async () => {
     acceptingAnswers = true;
-    nextButton.style.display = "none"; // Masquer le bouton "Suivant" jusqu'à ce que la réponse soit révélée
+    nextButton.style.display = "none";  // Masquer le bouton "Suivant" jusqu'à ce que la réponse soit révélée
 
-    // Vérifier s'il reste des questions, sinon en récupérer de nouvelles
+    // Si nous n'avons plus de questions disponibles, on en récupère de nouvelles
     if (availableQuestions.length === 0) {
-        availableQuestions = fetchQuestionsFromAPI();
+        availableQuestions = await fetchQuestionsFromAPI();
     }
 
-    // Prendre la première question disponible
-    currentQuestion = availableQuestions.shift(); // Retirer la question utilisée
+    // Sélectionner la première question de la liste disponible
+    currentQuestion = availableQuestions.shift(); // Retirer la question de la liste
 
-    question.innerText = currentQuestion.question;  // Afficher la question
-
-    // Réinitialiser le style pour afficher la question sans la réponse visible
+    // Mettre à jour le texte de la question
+    question.innerText = currentQuestion.question;
+    
+    // Réinitialiser l'état de la question pour l'affichage
     question.classList.remove('reveal-answer');
-    question.style.cursor = "pointer";  // Changer le curseur en pointer pour inviter à cliquer
+    question.style.cursor = "pointer";  // Cursor indiquant qu'il faut cliquer pour voir la réponse
 };
 
-// Afficher la réponse lorsqu'on clique sur la question
+// Afficher la réponse lorsque l'utilisateur clique sur la question
 question.addEventListener('click', () => {
     if (!acceptingAnswers) return;
 
     acceptingAnswers = false;
-    question.innerText = currentQuestion.answer;  // Afficher la réponse
-    question.classList.add('reveal-answer');  // Changer le style pour indiquer que la réponse est révélée
+    question.innerText = currentQuestion.answer;  // Afficher la réponse à la devinette
+    question.classList.add('reveal-answer');  // Ajouter une classe pour révéler la réponse
     nextButton.style.display = "block";  // Afficher le bouton "Suivant"
-    question.style.cursor = "default";  // Changer le curseur pour indiquer que la question n'est plus cliquable
+    question.style.cursor = "default";  // Modifier le curseur pour signaler que la question n'est plus cliquable
 });
 
 // Passer à la devinette suivante en cliquant sur le bouton
-nextButton.addEventListener('click', () => {
-    showNextQuestion();  // Charger la prochaine devinette
+nextButton.addEventListener('click', async () => {
+    await showNextQuestion();  // Charger la prochaine devinette
 });
 
-// Lancer le jeu en récupérant la première série de devinettes
+// Démarrer le jeu en récupérant les premières devinettes
 const startGame = async () => {
-    availableQuestions = await fetchQuestionsFromAPI();  // Récupérer les devinettes depuis l'API
+    availableQuestions = await fetchQuestionsFromAPI();  // Charger un premier jeu de questions
     if (availableQuestions.length > 0) {
         showNextQuestion();  // Afficher la première question
     } else {
