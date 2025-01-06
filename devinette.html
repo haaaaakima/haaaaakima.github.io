@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page de Quiz</title>
+    <title>Devinette Quiz</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="devinette.css">
 </head>
@@ -11,10 +11,17 @@
     <div class="container">
         <div id="game" class="justify-center flex-column">
             <div id="hud">
-                <!-- Affichage du score ou autre si besoin -->
+                <div class="hud-item">
+                    <p id="progressText" class="hud-prefix">
+                        Question
+                    </p>
+                    <div id="progressBar">
+                        <div id="progressBarFull"></div>
+                    </div>
+                </div>
             </div>
-            <h1 id="question">Cliquez pour voir la devinette !</h1>
-            <button id="nextButton">Suivant</button>
+            <h1 id="question">Cliquez sur la devinette pour découvrir la réponse</h1> <!-- La question sera affichée ici -->
+            <button id="nextButton" style="display: none;">Question suivante</button> <!-- Bouton caché au départ -->
         </div>
     </div>
 
