@@ -1,14 +1,17 @@
 const question = document.querySelector('#question');
-const nextButton = document.querySelector('#nextButton');
+const progressText = document.querySelector('#progressText');
+const progressBarFull = document.querySelector('#progressBarFull');
+const nextButton = document.querySelector('#nextButton'); // Bouton pour passer à la devinette suivante
 
 let currentQuestion = {};
-let acceptingAnswers = true;
-let availableQuestions = [];  // Liste de questions récupérées
+let questionCounter = 0;
+let availableQuestions = [];
+
+const MAX_QUESTIONS = 5; // Limite de questions
 
 // Fonction pour récupérer des devinettes depuis l'API JokeAPI
 const fetchQuestionsFromAPI = async () => {
     try {
-        // Nous récupérons ici un set de devinettes, sans limite spécifique.
         const response = await fetch('https://v2.jokeapi.dev/joke/Any?lang=fr&type=twopart&format=json&amount=5');
         const data = await response.json();
 
@@ -16,11 +19,11 @@ const fetchQuestionsFromAPI = async () => {
             return data.jokes.map(joke => {
                 if (joke.type === 'twopart') {
                     return {
-                        question: joke.setup,  // La question de la devinette
-                        answer: joke.delivery, // La réponse correcte
+                        question: joke.setup,         // La question de la devinette
+                        answer: joke.delivery,        // La réponse correcte
                     };
                 }
-            }).filter(Boolean);  // Filtrer les résultats non valides
+            }).filter(Boolean);  // Retirer les éléments invalides
         } else {
             console.log("Aucune devinette valide");
             return [];
@@ -31,51 +34,48 @@ const fetchQuestionsFromAPI = async () => {
     }
 };
 
-// Afficher la prochaine question
-const showNextQuestion = async () => {
-    acceptingAnswers = true;
-    nextButton.style.display = "none";  // Masquer le bouton "Suivant" jusqu'à ce que la réponse soit révélée
-
-    // Si nous n'avons plus de questions disponibles, on en récupère de nouvelles
-    if (availableQuestions.length === 0) {
-        availableQuestions = await fetchQuestionsFromAPI();
-    }
-
-    // Sélectionner la première question de la liste disponible
-    currentQuestion = availableQuestions.shift(); // Retirer la question de la liste
-
-    // Mettre à jour le texte de la question
-    question.innerText = currentQuestion.question;
-    
-    // Réinitialiser l'état de la question pour l'affichage
-    question.classList.remove('reveal-answer');
-    question.style.cursor = "pointer";  // Cursor indiquant qu'il faut cliquer pour voir la réponse
-};
-
-// Afficher la réponse lorsque l'utilisateur clique sur la question
-question.addEventListener('click', () => {
-    if (!acceptingAnswers) return;
-
-    acceptingAnswers = false;
-    question.innerText = currentQuestion.answer;  // Afficher la réponse à la devinette
-    question.classList.add('reveal-answer');  // Ajouter une classe pour révéler la réponse
-    nextButton.style.display = "block";  // Afficher le bouton "Suivant"
-    question.style.cursor = "default";  // Modifier le curseur pour signaler que la question n'est plus cliquable
-});
-
-// Passer à la devinette suivante en cliquant sur le bouton
-nextButton.addEventListener('click', async () => {
-    await showNextQuestion();  // Charger la prochaine devinette
-});
-
-// Démarrer le jeu en récupérant les premières devinettes
+// Démarrer le jeu
 const startGame = async () => {
-    availableQuestions = await fetchQuestionsFromAPI();  // Charger un premier jeu de questions
+    questionCounter = 0;
+    availableQuestions = await fetchQuestionsFromAPI();  // Récupérer les devinettes depuis l'API
     if (availableQuestions.length > 0) {
-        showNextQuestion();  // Afficher la première question
+        getNewQuestion();
     } else {
         alert("Pas de devinettes disponibles, essayez plus tard.");
     }
 };
 
-startGame();  // Lancer le jeu au chargement de la page
+// Obtenir une nouvelle question
+const getNewQuestion = () => {
+    if (availableQuestions.length === 0 || questionCounter >= MAX_QUESTIONS) {
+        localStorage.setItem('mostRecentScore', 0); // Pas de score ici
+        return window.location.assign('./end-devinette.html');
+    }
+
+    questionCounter++;
+    progressText.innerText = `Question ${questionCounter} sur ${MAX_QUESTIONS}`;
+    progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
+
+    currentQuestion = availableQuestions[0];  // La question en cours
+    question.innerText = currentQuestion.question; // Afficher la question (devinette)
+    question.dataset['answer'] = currentQuestion.answer; // Stocker la réponse cachée
+    question.classList.remove('reveal-answer'); // Réinitialiser la classe pour masquer la réponse
+    nextButton.style.display = 'none'; // Masquer le bouton suivant
+
+    availableQuestions.splice(0, 1); // Supprimer la question utilisée
+};
+
+// Lorsque la question est cliquée, afficher la réponse
+question.addEventListener('click', () => {
+    question.innerText = currentQuestion.answer;
+    question.classList.add('reveal-answer');
+    nextButton.style.display = 'block'; // Afficher le bouton pour passer à la question suivante
+});
+
+// Lorsque l'utilisateur clique sur le bouton "Suivant"
+nextButton.addEventListener('click', () => {
+    getNewQuestion(); // Passer à la question suivante
+});
+
+// Démarrer le jeu
+startGame();
